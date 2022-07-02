@@ -1,3 +1,4 @@
+#include <Watchy.h>
 #include "Watchy_7_SEG.h"
 #include "settings.h"
 
@@ -8,6 +9,3 @@ void setup(){
 }
 
 void loop(){}
-
-
-
