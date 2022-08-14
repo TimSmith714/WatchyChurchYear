@@ -175,7 +175,7 @@ void WatchyChurchYear::drawWeather(){
 
 weatherData Watchy::getWeatherAndDateData(){
     if(weatherIntervalCounter >= WEATHER_UPDATE_INTERVAL){ //only update if WEATHER_UPDATE_INTERVAL has elapsed i.e. 30 minutes
-        if(connectWiFi()){//Use Weather API for live data if WiFi is connected
+        if(connectWiFi()){//Use Weather API for live data if WiFi is connected 
             // Get step counter value
             uint32_t stepCount = sensor.getCounter();
 
