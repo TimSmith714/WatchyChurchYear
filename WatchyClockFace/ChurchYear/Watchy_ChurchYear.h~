@@ -1,0 +1,19 @@
+#ifndef WATCHY_CHURCHYEAR_H
+#define WATCHY_CHURCHYEAR_H
+
+#include <Watchy.h>
+
+
+class WatchyChurchYear : public Watchy{
+
+	using Watchy::Watchy;
+	public:
+		void drawWatchFace();
+		void drawTime();
+		void drawDate();
+		void drawSteps();
+		void drawWeather();
+		void drawBattery();
+};
+
+#endif
