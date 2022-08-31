@@ -127,7 +127,8 @@ void WatchyChurchYear::drawBattery(){
 
 void WatchyChurchYear::drawWeather(){
 
-    weatherData currentWeather = getWeatherAndDateData();
+    //weatherData currentWeather = getWeatherAndDateData();
+    weatherData currentWeather = getWeatherData();
 
     int8_t temperature = currentWeather.temperature;
     int16_t weatherConditionCode = currentWeather.weatherConditionCode;
@@ -173,59 +174,59 @@ void WatchyChurchYear::drawWeather(){
 // Added my own version of the getWeatherData
 // Let's call it something else getWeatherAndDateData
 
-weatherData Watchy::getWeatherAndDateData(){
-    if(weatherIntervalCounter >= WEATHER_UPDATE_INTERVAL){ //only update if WEATHER_UPDATE_INTERVAL has elapsed i.e. 30 minutes
-        if(connectWiFi()){//Use Weather API for live data if WiFi is connected 
-            // Get step counter value
-            uint32_t stepCount = sensor.getCounter();
-
-            HTTPClient http;
-            http.setConnectTimeout(3000);//3 second max timeout
-            String weatherQueryURL = AZURE_FUNCTION_URL + "&steps=" + String(stepCount);
-            http.begin(weatherQueryURL.c_str());
-            int httpResponseCode = http.GET();
-            if(httpResponseCode == 200) {
-                // Old weather code
-                String payload = http.getString();
-                JSONVar responseObject = JSON.parse(payload);
-                currentWeather.temperature = int(responseObject["weather"]["temperature"]);
-                currentWeather.weatherConditionCode = int(responseObject["weather"]["weatherId"]);
-                // My code copied for time set
-                const time_t FUDGE(10);//fudge factor to allow for upload time, etc. (seconds, YMMV)
-                tmElements_t tm;
-                tm.Month = int(responseObject["dateTime"]["month"]);
-                tm.Day = int(responseObject["dateTime"]["day"]);
-                tm.Year = int(responseObject["dateTime"]["year"]) - YEAR_OFFSET;
-                tm.Hour = int(responseObject["dateTime"]["hour"]);
-                tm.Minute = int(responseObject["dateTime"]["minute"]);
-                tm.Second = 0;
-
-                time_t t = makeTime(tm) + FUDGE;
-                RTC.set(t);   
-            }else{
-                //http error
-            }
-            http.end();
-            //turn off radios
-            WiFi.mode(WIFI_OFF);
-            btStop();
-        }else{//No WiFi, use RTC Temperature
-            uint8_t temperature = RTC.temperature() / 4; //celsius
-            if(strcmp(TEMP_UNIT, "imperial") == 0){
-                temperature = temperature * 9. / 5. + 32.; //fahrenheit
-            }
-            currentWeather.temperature = temperature;
-            currentWeather.weatherConditionCode = 800;
-        }
-        weatherIntervalCounter = 0;
-    }else{
-        weatherIntervalCounter++;
-    }
-    // TS inserting code to reset steps there
-    tmElements_t tm;
-    if (tm.Hour < 3)
-    {
-        sensor.resetStepCounter();
-    }
-    return currentWeather;
-}
+//weatherData WatchyChurchYear::getWeatherAndDateData(){
+//    if(weatherIntervalCounter >= WEATHER_UPDATE_INTERVAL){ //only update if WEATHER_UPDATE_INTERVAL has elapsed i.e. 30 minutes
+//        if(connectWiFi()){//Use Weather API for live data if WiFi is connected 
+//            // Get step counter value
+//            uint32_t stepCount = sensor.getCounter();
+//
+//            HTTPClient http;
+//            http.setConnectTimeout(3000);//3 second max timeout
+//            String weatherQueryURL = AZURE_FUNCTION_URL + "&steps=" + String(stepCount);
+//            http.begin(weatherQueryURL.c_str());
+//            int httpResponseCode = http.GET();
+//            if(httpResponseCode == 200) {
+//                // Old weather code
+//                String payload = http.getString();
+//                JSONVar responseObject = JSON.parse(payload);
+//                currentWeather.temperature = int(responseObject["weather"]["temperature"]);
+//                currentWeather.weatherConditionCode = int(responseObject["weather"]["weatherId"]);
+//                // My code copied for time set
+//                const time_t FUDGE(10);//fudge factor to allow for upload time, etc. (seconds, YMMV)
+//                tmElements_t tm;
+//                tm.Month = int(responseObject["dateTime"]["month"]);
+//                tm.Day = int(responseObject["dateTime"]["day"]);
+//                tm.Year = int(responseObject["dateTime"]["year"]) - YEAR_OFFSET;
+//                tm.Hour = int(responseObject["dateTime"]["hour"]);
+//                tm.Minute = int(responseObject["dateTime"]["minute"]);
+//                tm.Second = 0;
+//
+//                time_t t = makeTime(tm) + FUDGE;
+//                RTC.set(t);   
+//            }else{
+//                //http error
+//            }
+//            http.end();
+//            //turn off radios
+//            WiFi.mode(WIFI_OFF);
+//            btStop();
+//        }else{//No WiFi, use RTC Temperature
+//            uint8_t temperature = RTC.temperature() / 4; //celsius
+//            if(strcmp(TEMP_UNIT, "imperial") == 0){
+//                temperature = temperature * 9. / 5. + 32.; //fahrenheit
+//            }
+//            currentWeather.temperature = temperature;
+//            currentWeather.weatherConditionCode = 800;
+//        }
+//        weatherIntervalCounter = 0;
+//    }else{
+//        weatherIntervalCounter++;
+//    }
+//    // TS inserting code to reset steps there
+//    tmElements_t tm;
+//    if (tm.Hour < 3)
+//    {
+//        sensor.resetStepCounter();
+//    }
+//    return currentWeather;
+//}

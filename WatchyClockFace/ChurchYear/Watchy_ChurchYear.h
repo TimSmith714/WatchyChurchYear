@@ -12,6 +12,8 @@
 class WatchyChurchYear : public Watchy{
 	using Watchy::Watchy;
 	public:
+    weatherData getWeatherAndDateData();
+    int weatherIntervalCounter;
 		void drawWatchFace();
 		void drawTime();
 		void drawDate();
