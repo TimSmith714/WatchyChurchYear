@@ -12,7 +12,7 @@ void WatchyChurchYear::drawWatchFace(){
     display.fillScreen(DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
     display.setTextColor(DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     drawTime();
-    drawDate();
+    //drawDate();
     drawSteps();
     drawWeather();
     drawBattery();
@@ -23,8 +23,28 @@ void WatchyChurchYear::drawWatchFace(){
 }
 
 void WatchyChurchYear::drawTime(){
-    display.setFont(&DSEG7_Classic_Bold_53);
-    display.setCursor(5, 53+5);
+    // Set font and cursor
+    display.setFont(&DSEG7_Classic_Regular_15);
+    display.setCursor(5, 25+5);
+
+    // Display the int day
+    if(currentTime.Day < 10){
+      display.print("0");
+    }
+    display.print(currentTime.Day);
+
+    // Print spacer
+    display.print("-");
+
+    // Display the month
+    String month = monthShortStr(currentTime.Month);
+    display.print(month);
+
+    // Print Spacer
+    display.print(" ");
+
+    display.setFont(&DSEG7_Classic_Bold_25);
+    // Display Time
     int displayHour;
     if(HOUR_12_24==12){
       displayHour = ((currentTime.Hour+11)%12)+1;
@@ -40,6 +60,12 @@ void WatchyChurchYear::drawTime(){
         display.print("0");
     }
     display.println(currentTime.Minute);
+
+
+    // Show Day
+    display.setFont(&Seven_Segment10pt7b);
+    String dayOfWeek = dayStr(currentTime.Wday);
+    display.println(dayOfWeek);
 }
 
 void WatchyChurchYear::drawDate(){
@@ -76,9 +102,12 @@ void WatchyChurchYear::drawSteps(){
       sensor.resetStepCounter();
     }
     uint32_t stepCount = sensor.getCounter();
-    display.drawBitmap(10, 165, steps, 19, 23, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-    display.setCursor(35, 190);
-    display.println(stepCount);
+    display.drawBitmap(10, 65, steps, 19, 23, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.setCursor(35, 80);
+    // Show thousands to 1 decimal place
+    display.print(((float)((int)((stepCount / 1000) * 10))) / 10);
+    display.println("k");
+    //display.println(stepCount);
 }
 void WatchyChurchYear::drawBattery(){
     display.drawBitmap(154, 73, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
