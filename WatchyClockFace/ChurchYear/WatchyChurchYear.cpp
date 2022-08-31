@@ -48,49 +48,28 @@ void WatchyChurchYear::drawDate(){
     int16_t  x1, y1;
     uint16_t w, h;
 
-    
-    // Get date of week
     String dayOfWeek = dayStr(currentTime.Wday);
-    // Get Year
-    String dateYear = String(tmYearToCalendar(currentTime.Year));
-    // Get Month
-    String dateMonth;
-    if (currentTime.Month < 10)
-    {
-      dateMonth = "0" + currentTime.Month;
-    } else
-    {
-      dateMonth = currentTime.Month;
+    display.getTextBounds(dayOfWeek, 5, 85, &x1, &y1, &w, &h);
+    if(currentTime.Wday == 4){
+        w = w - 5;
     }
-    
-
-    // Build date
-    String dateString = dayOfWeek.substring(0,3) + " " + dateYear + "-" + dateMonth; 
-
-
-    char buffer [100];
-    sprintf(buffer, "%s %d-%s-%d", dayOfWeek.substring(0,3), tmYearToY2k(currentTime.Year),currentTime.Month, currentTime.Day);
-    // Display date
-    //display.printf("a");
-    display.printf("%s", buffer);
-    
-    
+    display.setCursor(85 - w, 85);
+    display.println(dayOfWeek);
 
     String month = monthShortStr(currentTime.Month);
-    //display.getTextBounds(month, 60, 110, &x1, &y1, &w, &h);
-    //display.setCursor(85 - w, 110);
-    //display.println(month);
+    display.getTextBounds(month, 60, 110, &x1, &y1, &w, &h);
+    display.setCursor(85 - w, 110);
+    display.println(month);
 
-    //display.setFont(&DSEG7_Classic_Bold_25);
-    //display.setCursor(5, 120);
-    //if(currentTime.Day < 10){
-    //display.print("0");
-    //}
-    //display.println(currentTime.Day);
-    //display.setCursor(5, 150);
-    //display.println(tmYearToCalendar(currentTime.Year));// offset from 1970, since year is stored in uint8_t
+    display.setFont(&DSEG7_Classic_Bold_25);
+    display.setCursor(5, 120);
+    if(currentTime.Day < 10){
+    display.print("0");
+    }
+    display.println(currentTime.Day);
+    display.setCursor(5, 150);
+    display.println(tmYearToCalendar(currentTime.Year));// offset from 1970, since year is stored in uint8_t
 }
-
 void WatchyChurchYear::drawSteps(){
     // reset step counter at midnight
     if (currentTime.Hour == 0 && currentTime.Minute == 0){
@@ -101,7 +80,6 @@ void WatchyChurchYear::drawSteps(){
     display.setCursor(35, 190);
     display.println(stepCount);
 }
-
 void WatchyChurchYear::drawBattery(){
     display.drawBitmap(154, 73, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     display.fillRect(159, 78, 27, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);//clear battery segments
@@ -127,7 +105,6 @@ void WatchyChurchYear::drawBattery(){
 
 void WatchyChurchYear::drawWeather(){
 
-    //weatherData currentWeather = getWeatherAndDateData();
     weatherData currentWeather = getWeatherData();
 
     int8_t temperature = currentWeather.temperature;
@@ -169,64 +146,3 @@ void WatchyChurchYear::drawWeather(){
     return;
     display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
 }
-
-
-// Added my own version of the getWeatherData
-// Let's call it something else getWeatherAndDateData
-
-//weatherData WatchyChurchYear::getWeatherAndDateData(){
-//    if(weatherIntervalCounter >= WEATHER_UPDATE_INTERVAL){ //only update if WEATHER_UPDATE_INTERVAL has elapsed i.e. 30 minutes
-//        if(connectWiFi()){//Use Weather API for live data if WiFi is connected 
-//            // Get step counter value
-//            uint32_t stepCount = sensor.getCounter();
-//
-//            HTTPClient http;
-//            http.setConnectTimeout(3000);//3 second max timeout
-//            String weatherQueryURL = AZURE_FUNCTION_URL + "&steps=" + String(stepCount);
-//            http.begin(weatherQueryURL.c_str());
-//            int httpResponseCode = http.GET();
-//            if(httpResponseCode == 200) {
-//                // Old weather code
-//                String payload = http.getString();
-//                JSONVar responseObject = JSON.parse(payload);
-//                currentWeather.temperature = int(responseObject["weather"]["temperature"]);
-//                currentWeather.weatherConditionCode = int(responseObject["weather"]["weatherId"]);
-//                // My code copied for time set
-//                const time_t FUDGE(10);//fudge factor to allow for upload time, etc. (seconds, YMMV)
-//                tmElements_t tm;
-//                tm.Month = int(responseObject["dateTime"]["month"]);
-//                tm.Day = int(responseObject["dateTime"]["day"]);
-//                tm.Year = int(responseObject["dateTime"]["year"]) - YEAR_OFFSET;
-//                tm.Hour = int(responseObject["dateTime"]["hour"]);
-//                tm.Minute = int(responseObject["dateTime"]["minute"]);
-//                tm.Second = 0;
-//
-//                time_t t = makeTime(tm) + FUDGE;
-//                RTC.set(t);   
-//            }else{
-//                //http error
-//            }
-//            http.end();
-//            //turn off radios
-//            WiFi.mode(WIFI_OFF);
-//            btStop();
-//        }else{//No WiFi, use RTC Temperature
-//            uint8_t temperature = RTC.temperature() / 4; //celsius
-//            if(strcmp(TEMP_UNIT, "imperial") == 0){
-//                temperature = temperature * 9. / 5. + 32.; //fahrenheit
-//            }
-//            currentWeather.temperature = temperature;
-//            currentWeather.weatherConditionCode = 800;
-//        }
-//        weatherIntervalCounter = 0;
-//    }else{
-//        weatherIntervalCounter++;
-//    }
-//    // TS inserting code to reset steps there
-//    tmElements_t tm;
-//    if (tm.Hour < 3)
-//    {
-//        sensor.resetStepCounter();
-//    }
-//    return currentWeather;
-//}
