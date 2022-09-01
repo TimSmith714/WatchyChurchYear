@@ -16,10 +16,16 @@ void WatchyChurchYear::drawWatchFace(){
     drawSteps();
     drawWeather();
     drawBattery();
-    display.drawBitmap(120, 77, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    // Draw Wifi
+    display.drawBitmap(90, 40, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    // Draw Bluetooth
     if(BLE_CONFIGURED){
         display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     }
+    // Draw weekname
+    drawWeekName();
+    // Draw Saint
+    drawSaint();
 }
 
 void WatchyChurchYear::drawTime(){
@@ -68,34 +74,6 @@ void WatchyChurchYear::drawTime(){
     display.println(dayOfWeek);
 }
 
-void WatchyChurchYear::drawDate(){
-    display.setFont(&Seven_Segment10pt7b);
-
-    int16_t  x1, y1;
-    uint16_t w, h;
-
-    String dayOfWeek = dayStr(currentTime.Wday);
-    display.getTextBounds(dayOfWeek, 5, 85, &x1, &y1, &w, &h);
-    if(currentTime.Wday == 4){
-        w = w - 5;
-    }
-    display.setCursor(85 - w, 85);
-    display.println(dayOfWeek);
-
-    String month = monthShortStr(currentTime.Month);
-    display.getTextBounds(month, 60, 110, &x1, &y1, &w, &h);
-    display.setCursor(85 - w, 110);
-    display.println(month);
-
-    display.setFont(&DSEG7_Classic_Bold_25);
-    display.setCursor(5, 120);
-    if(currentTime.Day < 10){
-    display.print("0");
-    }
-    display.println(currentTime.Day);
-    display.setCursor(5, 150);
-    display.println(tmYearToCalendar(currentTime.Year));// offset from 1970, since year is stored in uint8_t
-}
 void WatchyChurchYear::drawSteps(){
     // reset step counter at midnight
     if (currentTime.Hour == 0 && currentTime.Minute == 0){
@@ -103,14 +81,14 @@ void WatchyChurchYear::drawSteps(){
     }
     uint32_t stepCount = sensor.getCounter();
     display.drawBitmap(10, 65, steps, 19, 23, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-    display.setCursor(35, 80);
+    display.setCursor(40, 80);
     // Show thousands to 1 decimal place
-    display.print(((float)((int)((stepCount / 1000) * 10))) / 10);
+    display.print(((float)((int)((stepCount / 10) * 10))) / 1000);
     display.println("k");
-    //display.println(stepCount);
 }
+
 void WatchyChurchYear::drawBattery(){
-    display.drawBitmap(154, 73, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(124, 45, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     display.fillRect(159, 78, 27, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);//clear battery segments
     int8_t batteryLevel = 0;
     float VBAT = getBatteryVoltage();
@@ -127,8 +105,13 @@ void WatchyChurchYear::drawBattery(){
         batteryLevel = 0;
     }
 
+    display.setCursor(165, 50);
+    display.setFont(&DSEG7_Classic_Regular_15);
+    display.println(batteryLevel);
+
     for(int8_t batterySegments = 0; batterySegments < batteryLevel; batterySegments++){
-        display.fillRect(159 + (batterySegments * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+        //display.fillRect(159 + (batterySegments * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+        display.fillRect(159 + (batterySegments * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
     }
 }
 
@@ -139,19 +122,27 @@ void WatchyChurchYear::drawWeather(){
     int8_t temperature = currentWeather.temperature;
     int16_t weatherConditionCode = currentWeather.weatherConditionCode;
 
-    display.setFont(&DSEG7_Classic_Regular_39);
+    display.setFont(&DSEG7_Classic_Regular_15);
     int16_t  x1, y1;
     uint16_t w, h;
     display.getTextBounds(String(temperature), 0, 0, &x1, &y1, &w, &h);
     if(159 - w - x1 > 87){
-        display.setCursor(159 - w - x1, 150);
+        display.setCursor(120 - w - x1, 80);
     }else{
-        display.setFont(&DSEG7_Classic_Bold_25);
+        display.setFont(&DSEG7_Classic_Regular_15);
         display.getTextBounds(String(temperature), 0, 0, &x1, &y1, &w, &h);
         display.setCursor(159 - w - x1, 136);
     }
-    display.println(temperature);
-    display.drawBitmap(165, 110, currentWeather.isMetric ? celsius : fahrenheit, 26, 20, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.print(temperature);
+    if (currentWeather.isMetric == true)
+    {
+      display.println(" C");
+    } else {
+      display.println(" F");
+    }
+    //display.drawBitmap(100, 70, currentWeather.isMetric ? celsius : fahrenheit, 26, 20, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    
+    
     const unsigned char* weatherIcon;
 
     //https://openweathermap.org/weather-conditions
@@ -173,5 +164,19 @@ void WatchyChurchYear::drawWeather(){
     weatherIcon = thunderstorm;
     }else
     return;
-    display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(145, 60, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+}
+
+void WatchyChurchYear::drawWeekName(){
+  display.setFont(&DSEG7_Classic_Regular_15);
+  String weekName = " ";
+  display.setCursor(5, 110);
+  display.print(weekName);
+}
+
+void WatchyChurchYear::drawSaint(){
+  String saintName = " ";
+  display.setFont(&DSEG7_Classic_Regular_15);
+  display.setCursor(5, 135);
+  display.print(saintName);
 }

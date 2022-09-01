@@ -17,6 +17,8 @@ class WatchyChurchYear : public Watchy{
         void drawSteps();
         void drawWeather();
         void drawBattery();
+        void drawWeekName();
+        void drawSaint();
 };
 
 #endif
