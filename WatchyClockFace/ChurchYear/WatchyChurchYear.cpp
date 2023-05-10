@@ -82,8 +82,9 @@ void WatchyChurchYear::drawSteps(){
     uint32_t stepCount = sensor.getCounter();
     display.drawBitmap(10, 65, steps, 19, 23, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     display.setCursor(40, 80);
-    // Show thousands to 1 decimal place
-    display.print(((float)((int)((stepCount / 10) * 10))) / 1000);
+    // Round the steps to thousands with 2 decimal places
+    float displaySteps = (float)stepCount / 1000;
+    display.print(round(displaySteps * 100) / 100);
     display.println("k");
 }
 
