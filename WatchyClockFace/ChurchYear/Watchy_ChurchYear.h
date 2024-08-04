@@ -7,6 +7,7 @@
 #include "DSEG7_Classic_Bold_25.h"
 #include "DSEG7_Classic_Regular_39.h"
 #include "icons.h"
+#include <ctime>
 
 class WatchyChurchYear : public Watchy{
     using Watchy::Watchy;
@@ -17,6 +18,8 @@ class WatchyChurchYear : public Watchy{
         void drawSteps();
         void drawWeather();
         void drawBattery();
+        void drawUnequalHours();
+        void getOnlineData();
 };
 
 #endif

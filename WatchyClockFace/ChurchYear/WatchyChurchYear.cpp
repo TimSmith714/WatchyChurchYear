@@ -16,10 +16,12 @@ void WatchyChurchYear::drawWatchFace(){
     drawSteps();
     drawWeather();
     drawBattery();
-    display.drawBitmap(120, 77, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(120, 57, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     if(BLE_CONFIGURED){
         display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     }
+    drawUnequalHours();
+    getOnlineData();
 }
 
 void WatchyChurchYear::drawTime(){
@@ -66,6 +68,12 @@ void WatchyChurchYear::drawTime(){
     display.setFont(&Seven_Segment10pt7b);
     String dayOfWeek = dayStr(currentTime.Wday);
     display.println(dayOfWeek);
+
+// NOw do uneqal hour
+display.setFont(&DSEG7_Classic_Bold_25);
+   display.setCursor(5, 125);
+   display.print("TEST");
+    
 }
 
 void WatchyChurchYear::drawDate(){
@@ -97,6 +105,7 @@ void WatchyChurchYear::drawDate(){
     display.println(tmYearToCalendar(currentTime.Year));// offset from 1970, since year is stored in uint8_t
 }
 void WatchyChurchYear::drawSteps(){
+  display.setFont(&Seven_Segment10pt7b);
     // reset step counter at midnight
     if (currentTime.Hour == 0 && currentTime.Minute == 0){
       sensor.resetStepCounter();
@@ -105,7 +114,8 @@ void WatchyChurchYear::drawSteps(){
     display.drawBitmap(10, 65, steps, 19, 23, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     display.setCursor(35, 80);
     // Show thousands to 1 decimal place
-    display.print(((float)((int)((stepCount / 1000) * 10))) / 10);
+    float displaySteps = (float)stepCount / 1000;
+    display.print(round(displaySteps * 100) / 100);
     display.println("k");
     //display.println(stepCount);
 }
@@ -174,4 +184,18 @@ void WatchyChurchYear::drawWeather(){
     }else
     return;
     display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+}
+
+void WatchyChurchYear::drawUnequalHours(){
+   display.setFont(&DSEG7_Classic_Bold_25);
+   display.setCursor(5, 125);
+   //display.print("TEST");
+}
+
+
+void WatchyChurchYear::getOnlineData(){
+  display.setFont(&DSEG7_Classic_Bold_25);
+   display.setCursor(5, 150);
+  // display.print("City:");
+ // display.print(settings.cityID);
 }
