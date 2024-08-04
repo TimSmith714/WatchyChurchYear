@@ -20,6 +20,8 @@ class WatchyChurchYear : public Watchy{
         void drawBattery();
         void drawUnequalHours();
         void getOnlineData();
+        void drawWeekName();
+        void drawSaint();
 };
 
 #endif
