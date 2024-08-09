@@ -16,10 +16,13 @@ void WatchyChurchYear::drawWatchFace(){
     drawSteps();
     drawWeather();
     drawBattery();
-    display.drawBitmap(120, 57, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-    if(BLE_CONFIGURED){
-        display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    // was 116,57
+    display.drawBitmap(100, 35, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    #ifdef ARDUINO_ESP32S3_DEV
+    if(USB_PLUGGED_IN){
+      display.drawBitmap(140, 75, charge, 16, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     }
+    #endif
     drawUnequalHours();
     getOnlineData();
     // Draw weekname
@@ -71,13 +74,7 @@ void WatchyChurchYear::drawTime(){
     // Show Day
     display.setFont(&Seven_Segment10pt7b);
     String dayOfWeek = dayStr(currentTime.Wday);
-    display.println(dayOfWeek);
-
-// NOw do uneqal hour
-display.setFont(&DSEG7_Classic_Bold_25);
-   display.setCursor(5, 125);
-   display.print("TEST");
-    
+    display.println(dayOfWeek);    
 }
 
 void WatchyChurchYear::drawSteps(){
@@ -88,39 +85,36 @@ void WatchyChurchYear::drawSteps(){
     }
     uint32_t stepCount = sensor.getCounter();
     display.drawBitmap(10, 65, steps, 19, 23, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-<<<<<<< HEAD
-    display.setCursor(35, 80);
-    // Show thousands to 1 decimal place
-=======
     display.setCursor(40, 80);
     // Round the steps to thousands with 2 decimal places
->>>>>>> 5c0a4088add419810f44f69ad7aae38a73c71756
     float displaySteps = (float)stepCount / 1000;
     display.print(round(displaySteps * 100) / 100);
     display.println("k");
 }
 
 void WatchyChurchYear::drawBattery(){
-    display.drawBitmap(124, 45, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    display.drawBitmap(135, 35, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     display.fillRect(159, 78, 27, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);//clear battery segments
     int8_t batteryLevel = 0;
     float VBAT = getBatteryVoltage();
-    if(VBAT > 4.1){
+    if(VBAT > 4.0){
         batteryLevel = 3;
     }
-    else if(VBAT > 3.95 && VBAT <= 4.1){
+    else if(VBAT > 3.6 && VBAT <= 4.0){
         batteryLevel = 2;
     }
-    else if(VBAT > 3.80 && VBAT <= 3.95){
+    else if(VBAT > 3.20 && VBAT <= 3.6){
         batteryLevel = 1;
     }
-    else if(VBAT <= 3.80){
+    else if(VBAT <= 3.20){
         batteryLevel = 0;
     }
 
-    display.setCursor(165, 50);
-    display.setFont(&DSEG7_Classic_Regular_15);
-    display.println(batteryLevel);
+    // This code was added to debug the battery level. With the latest version of the Watchy Library it's the 
+    // wrong pin - hence it reports 0. Will comment out until I've sorted out changing the pin
+    //display.setCursor(165, 50);
+    //display.setFont(&DSEG7_Classic_Regular_15);
+    //display.println(batteryLevel);
 
     for(int8_t batterySegments = 0; batterySegments < batteryLevel; batterySegments++){
         //display.fillRect(159 + (batterySegments * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
@@ -159,6 +153,7 @@ void WatchyChurchYear::drawWeather(){
     const unsigned char* weatherIcon;
 
     //https://openweathermap.org/weather-conditions
+    if(WIFI_CONFIGURED){
     if(weatherConditionCode > 801){//Cloudy
     weatherIcon = cloudy;
     }else if(weatherConditionCode == 801){//Few Clouds
@@ -177,27 +172,33 @@ void WatchyChurchYear::drawWeather(){
     weatherIcon = thunderstorm;
     }else
     return;
-    display.drawBitmap(145, 60, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+    }else{
+      weatherIcon = chip;
+    }
+    display.drawBitmap(145, 80, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
 }
 
 void WatchyChurchYear::drawWeekName(){
-  display.setFont(&DSEG7_Classic_Regular_15);
-  String weekName = " ";
-  display.setCursor(5, 110);
+  //display.setFont(&DSEG7_Classic_Regular_15);
+  display.setFont(&Seven_Segment10pt7b);
+  String weekName = "Ordinary Time";
+  display.setCursor(5, 112);
   display.print(weekName);
 }
 
 void WatchyChurchYear::drawSaint(){
-  String saintName = " ";
-  display.setFont(&DSEG7_Classic_Regular_15);
-  display.setCursor(5, 135);
+  String saintName = "St Isidore of Seville";
+  //display.setFont(&DSEG7_Classic_Regular_15);
+  display.setFont(&Seven_Segment10pt7b);
+  display.setCursor(5, 145);
   display.print(saintName);
 }
 
 void WatchyChurchYear::drawUnequalHours(){
-   display.setFont(&DSEG7_Classic_Bold_25);
-   display.setCursor(5, 125);
-   //display.print("TEST");
+   //display.setFont(&DSEG7_Classic_Regular_15);
+   display.setFont(&Seven_Segment10pt7b);
+   display.setCursor(5, 180);
+   display.print("Vespers");
 }
 
 
